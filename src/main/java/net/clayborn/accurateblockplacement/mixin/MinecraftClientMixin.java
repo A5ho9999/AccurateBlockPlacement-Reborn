@@ -35,14 +35,8 @@ public abstract class MinecraftClientMixin implements IMinecraftClientAccessor
 			info.cancel();
 		}
 	}
-	
-	@Override
-	public void accurateblockplacement_SetItemUseCooldown(int cooldown)
-	{
-		itemUseCooldown = cooldown;
-	}
-	
-	@Override
+
+    @Override
 	public int accurateblockplacement_GetItemUseCooldown()
 	{
 		return itemUseCooldown;

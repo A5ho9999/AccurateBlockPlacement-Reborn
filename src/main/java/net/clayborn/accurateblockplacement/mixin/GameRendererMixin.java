@@ -1,43 +1,37 @@
 package net.clayborn.accurateblockplacement.mixin;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Objects;
-
+import net.clayborn.accurateblockplacement.AccurateBlockPlacementMod;
+import net.clayborn.accurateblockplacement.IKeyBindingAccessor;
+import net.clayborn.accurateblockplacement.IMinecraftClientAccessor;
+//import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.Block;
+//import net.minecraft.block.BlockState;
+//import net.minecraft.block.StairsBlock;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.GameRenderer;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.*;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction.Axis;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import net.clayborn.accurateblockplacement.AccurateBlockPlacementMod;
-import net.clayborn.accurateblockplacement.IKeyBindingAccessor;
-import net.clayborn.accurateblockplacement.IMinecraftClientAccessor;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.StairsBlock;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.AliasedBlockItem;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.item.MiningToolItem;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Direction.Axis;
-import net.minecraft.world.World;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Objects;
 
 @Mixin(GameRenderer.class)
 public abstract class GameRendererMixin {
-	@Unique private static final String blockActivateMethodName = getBlockActivateMethodName();
+//	@Unique private static final String blockActivateMethodName = getBlockActivateMethodName();
 	@Unique private static final String itemUseMethodName = getItemUseMethodName();
 
 	@Unique
@@ -46,13 +40,13 @@ public abstract class GameRendererMixin {
 	@Unique private Vec3d lastPlayerPlacedBlockPos = null;
 	@Unique private Boolean autoRepeatWaitingOnCooldown = true;
 	@Unique private Vec3d lastFreshPressMouseRatio = null;
-	@Unique private final ArrayList<HitResult> backFillList = new ArrayList<HitResult>();
+	@Unique private final ArrayList<HitResult> backFillList = new ArrayList<>();
 	@Unique private Item lastItemInUse = null;
 
 	@Unique Hand handOfCurrentItemInUse;
 
 	@Unique
-	private Item getItemInUse(MinecraftClient client) {
+	private ItemStack getItemInUse(MinecraftClient client) {
 		// have to check each hand
 		Hand[] hands = Hand.values();
 
@@ -61,61 +55,65 @@ public abstract class GameRendererMixin {
 
             if (!itemInHand.isEmpty()) {
 				handOfCurrentItemInUse = thisHand;
-				return itemInHand.getItem();
+				return itemInHand;
             }
         }
 
 		return null;
 	}
 
-	@Unique
-	private static String getBlockActivateMethodName() {
-		Method[] methods = Block.class.getMethods();
+	// TODO: Rework these to work correctly with new versions of minecraft
 
-		for (Method method : methods) {
-			Class<?>[] types = method.getParameterTypes();
-
-			if (types.length != 6) {
-				continue;
-			}
-			if (types[0] != BlockState.class) {
-				continue;
-			}
-			if (types[1] != World.class) {
-				continue;
-			}
-			if (types[2] != BlockPos.class) {
-				continue;
-			}
-			if (types[3] != PlayerEntity.class) {
-				continue;
-			}
-			if (types[4] != Hand.class) {
-				continue;
-			}
-			if (types[5] != BlockHitResult.class) {
-				continue;
-			}
-
-			return method.getName();
-		}
-
-		return null;
-	}
-
-	@Unique
-	private Boolean doesBlockHaveOverriddenActivateMethod(Block block) {
-		if (blockActivateMethodName == null) {
-			System.out.println("[ERROR] blockActivateMethodName is null!");
-		}
-
-		try {
-			return !block.getClass().getMethod(Objects.requireNonNull(blockActivateMethodName), BlockState.class, World.class, BlockPos.class, PlayerEntity.class, Hand.class, BlockHitResult.class).getDeclaringClass().equals(AbstractBlock.class);
-		} catch (Exception e) {
-			System.out.println("[ERROR] Unable to find block " + block.getClass().getName() + " activate method!");
-			return false;
-		}
-	}
+//	@Unique
+//	private static String getBlockActivateMethodName() {
+//		Method[] methods = Block.class.getMethods();
+//
+//		for (Method method : methods) {
+//			Class<?>[] types = method.getParameterTypes();
+//
+//			System.out.println("[Typing] " + method.getName() + " " + types);
+//
+//			if (types.length != 6) {
+//				continue;
+//			}
+//			if (types[0] != BlockState.class) {
+//				continue;
+//			}
+//			if (types[1] != World.class) {
+//				continue;
+//			}
+//			if (types[2] != BlockPos.class) {
+//				continue;
+//			}
+//			if (types[3] != PlayerEntity.class) {
+//				continue;
+//			}
+//			if (types[4] != Hand.class) {
+//				continue;
+//			}
+//			if (types[5] != BlockHitResult.class) {
+//				continue;
+//			}
+//
+//			return method.getName();
+//		}
+//
+//		return null;
+//	}
+//
+//	@Unique
+//	private Boolean doesBlockHaveOverriddenActivateMethod(Block block) {
+//		if (blockActivateMethodName == null) {
+//			System.out.println("[ERROR] blockActivateMethodName is null!");
+//		}
+//
+//		try {
+//			return !block.getClass().getMethod(blockActivateMethodName, BlockState.class, World.class, BlockPos.class, PlayerEntity.class, Hand.class, BlockHitResult.class).getDeclaringClass().equals(AbstractBlock.class);
+//		} catch (Exception e) {
+//			System.out.println("[ERROR] Unable to find block " + block.getClass().getName() + " activate method!");
+//			return false;
+//		}
+//	}
 
 	@Unique
 	private static String getItemUseMethodName() {
@@ -157,12 +155,10 @@ public abstract class GameRendererMixin {
 		}
 	}
 
-	@Inject(method = )
-
-	@Inject(method = "updateTargetedEntity", at = @At("RETURN"))
-	private void onUpdateTargetedEntityComplete(CallbackInfo info) {
+	@Inject(method = "updateCrosshairTarget", at = @At("RETURN"))
+	private void onUpdateCrosshairTargetComplete(float tickDelta, CallbackInfo ci) {
 		if (!AccurateBlockPlacementMod.isAccurateBlockPlacementEnabled) {
-			// reset all state just in case
+			// Reset all states just in case
 			AccurateBlockPlacementMod.disableNormalItemUse = false;
 
 			lastSeenBlockPos = null;
@@ -181,23 +177,26 @@ public abstract class GameRendererMixin {
 
 		MinecraftClient client = MinecraftClient.getInstance();
 
-		// safety checks
+		// Safety Checks
 		if (client == null || client.options == null || client.options.useKey == null || client.crosshairTarget == null || client.player == null || client.world == null || client.mouse == null || client.getWindow() == null) {
 			return;
 		}
 
-		// will be set to true only if needed
+		// Set to true only if needed
 		AccurateBlockPlacementMod.disableNormalItemUse = false;
-		IKeyBindingAccessor keyUseAccessor = (IKeyBindingAccessor) (Object) client.options.useKey;
-		Boolean freshKeyPress = keyUseAccessor.accurateblockplacement_GetTimesPressed() > 0;
+		IKeyBindingAccessor keyUseAccessor = (IKeyBindingAccessor) client.options.useKey;
+		boolean freshKeyPress = keyUseAccessor.accurateblockplacement_GetTimesPressed() > 0;
 
-		Item currentItem = getItemInUse(client);
+		ItemStack currentItemStack = getItemInUse(client);
+		if (currentItemStack == null) {
+			return;
+		}
 
-		// reset state if the key was actually pressed
-		// note: at very low frame rates they might have let go and hit it again before
-		// we get back here
+		Item currentItem = currentItemStack.getItem();
+
+		// Reset state if the key was actually pressed
 		if (freshKeyPress) {
-			// clear history since they let go of the button
+			// Clear history since key released
 			lastSeenBlockPos = null;
 			lastPlacedBlockPos = null;
 			lastPlayerPlacedBlockPos = null;
@@ -226,7 +225,7 @@ public abstract class GameRendererMixin {
 		}
 
 		// if the item we are holding is activatable, let vanilla take over
-		if ((currentItem.isFood() && !(currentItem instanceof AliasedBlockItem)) || doesItemHaveOverriddenUseMethod(currentItem)) {
+		if ((currentItemStack.get(DataComponentTypes.FOOD) != null && !(currentItem instanceof AliasedBlockItem)) || doesItemHaveOverriddenUseMethod(currentItem)) {
 			return;
 		}
 
@@ -238,19 +237,19 @@ public abstract class GameRendererMixin {
 		// check the other hand if it has something in use and if so let vanilla take over
 		Hand otherHand = handOfCurrentItemInUse == Hand.MAIN_HAND ? Hand.OFF_HAND : Hand.MAIN_HAND;
 		ItemStack otherHandItemStack = client.player.getStackInHand(otherHand);
-		if (!otherHandItemStack.isEmpty() && (otherHandItemStack.getItem().isFood() || doesItemHaveOverriddenUseMethod(otherHandItemStack.getItem())) && client.player.isUsingItem()) {
+		if (!otherHandItemStack.isEmpty() && (otherHandItemStack.get(DataComponentTypes.FOOD) != null || doesItemHaveOverriddenUseMethod(otherHandItemStack.getItem())) && client.player.isUsingItem()) {
 			return;
 		}
 
 		BlockHitResult blockHitResult = (BlockHitResult) client.crosshairTarget;
 		BlockPos blockHitPos = blockHitResult.getBlockPos();
-		Block targetBlock = client.world.getBlockState(blockHitPos).getBlock();
-		Boolean isTargetBlockActivatable = doesBlockHaveOverriddenActivateMethod(targetBlock);
+//		Block targetBlock = client.world.getBlockState(blockHitPos).getBlock();
+//		Boolean isTargetBlockActivatable = doesBlockHaveOverriddenActivateMethod(targetBlock);
 
 		// don't override behavior of clicking activatable blocks (and stairs) unless holding SNEAKING to replicate vanilla behaviors
-		if (isTargetBlockActivatable && !(targetBlock instanceof StairsBlock) && !client.player.isSneaking()) {
-			return;
-		}
+//		if (isTargetBlockActivatable && !(targetBlock instanceof StairsBlock) && !client.player.isSneaking()) {
+//			return;
+//		}
 
 		// are they holding the use key and is the item to use a block?
 		// also is the SAME item we started with if we are in repeat mode?
@@ -295,16 +294,16 @@ public abstract class GameRendererMixin {
 			// [ we have no 'place' history or the 'place' history isn't a match ] ] OR
 			// [ we have 'place' history, it is a match, the player is building toward
 			// themselves and has moved one block backwards] ]
-			Boolean isPlacementTargetFresh = ((lastSeenBlockPos == null || !lastSeenBlockPos.equals(blockHitPos))
+			boolean isPlacementTargetFresh = ((lastSeenBlockPos == null || !lastSeenBlockPos.equals(blockHitPos))
 					&& (lastPlacedBlockPos == null || !lastPlacedBlockPos.equals(blockHitPos)))
 					|| (lastPlacedBlockPos != null && lastPlayerPlacedBlockPos != null
 					&& lastPlacedBlockPos.equals(blockHitPos)
 					&& Math.abs(facingAxisPlayerLastPos - facingAxisPlayerPos) >= 0.99d // because precision
 					&& Math.abs(facingAxisPlayerLastPos - facingAxisLastPlacedPos) < Math.abs(facingAxisPlayerPos - facingAxisLastPlacedPos));
 
-			Boolean hasMouseMoved = (currentMouseRatio != null && lastFreshPressMouseRatio != null && lastFreshPressMouseRatio.distanceTo(currentMouseRatio) >= 0.1);
+			boolean hasMouseMoved = (currentMouseRatio != null && lastFreshPressMouseRatio != null && lastFreshPressMouseRatio.distanceTo(currentMouseRatio) >= 0.1);
 
-			Boolean isOnCooldown = autoRepeatWaitingOnCooldown && clientAccessor.accurateblockplacement_GetItemUseCooldown() > 0 && !hasMouseMoved;
+			boolean isOnCooldown = autoRepeatWaitingOnCooldown && clientAccessor.accurateblockplacement_GetItemUseCooldown() > 0 && !hasMouseMoved;
 
 			// if [ we are still holding the same block we starting pressing 'use' with] AND
 			// [ [ this is a fresh keypress ] OR
@@ -334,7 +333,7 @@ public abstract class GameRendererMixin {
 
 					// always run at least once if we reach here
 					// if this isn't a fresh key press, turn on the run once flag
-					Boolean runOnceFlag = !freshKeyPress;
+					boolean runOnceFlag = !freshKeyPress;
 
 					// in case they manage to push the button multiple times per frame
 					// note: we already subtracted one from the press count earlier so the total
@@ -354,13 +353,13 @@ public abstract class GameRendererMixin {
 								Vec3d summedLastPlayerPos = lastPlayerPlacedBlockPos.add(new Vec3d(targetPlacement.getSide().getVector().getX(), targetPlacement.getSide().getVector().getY(), targetPlacement.getSide().getVector().getZ()));
 
 								lastPlayerPlacedBlockPos = switch (targetPlacement.getSide().getAxis()) {
-                                    case X ->
-                                            new Vec3d(summedLastPlayerPos.x, client.player.getPos().y, client.player.getPos().z);
-                                    case Y ->
-                                            new Vec3d(client.player.getPos().x, summedLastPlayerPos.y, client.player.getPos().z);
-                                    case Z ->
-                                            new Vec3d(client.player.getPos().x, client.player.getPos().y, summedLastPlayerPos.z);
-                                };
+									case X ->
+											new Vec3d(summedLastPlayerPos.x, client.player.getPos().y, client.player.getPos().z);
+									case Y ->
+											new Vec3d(client.player.getPos().x, summedLastPlayerPos.y, client.player.getPos().z);
+									case Z ->
+											new Vec3d(client.player.getPos().x, client.player.getPos().y, summedLastPlayerPos.z);
+								};
 							}
 						}
 
